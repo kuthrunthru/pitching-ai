@@ -14,7 +14,7 @@ def process_video_landmarks(
     video_path: str,
     conf_thresh: float,
     max_process_width: int,
-    model_complexity: int = 2,
+    model_complexity: int = 1,
     smooth_landmarks: bool = True,
     chosen_mode: str = "None",
 ) -> dict:
