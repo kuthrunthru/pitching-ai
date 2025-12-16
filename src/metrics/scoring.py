@@ -74,11 +74,15 @@ def score_stride_length_ratio(ratio):
     """
     Score stride length ratio.
     
-    Thresholds:
-    GREEN (>= 0.85), YELLOW (0.65-0.84), RED (< 0.65)
+    Note: Ratio is normalized by shoulder-to-ankle height (not full body height),
+    so thresholds are adjusted accordingly. A ratio of ~3.5 corresponds to ~0.85-1.0
+    when normalized by full body height.
+    
+    Thresholds (adjusted for shoulder-to-ankle normalization):
+    GREEN (>= 3.5), YELLOW (2.7-3.5), RED (< 2.7)
     
     Args:
-        ratio: Stride length ratio (None for N/A)
+        ratio: Stride length ratio normalized by shoulder-to-ankle height (None for N/A)
     
     Returns:
         (score, status)
@@ -88,11 +92,13 @@ def score_stride_length_ratio(ratio):
     if ratio is None:
         return None, None
     
-    # Thresholds: GREEN (>= 0.85), YELLOW (0.65-0.84), RED (< 0.65)
-    if ratio >= 0.85:
+    # Thresholds adjusted for shoulder-to-ankle normalization:
+    # GREEN (>= 3.5), YELLOW (2.7-3.5), RED (< 2.7)
+    # These correspond to ~0.85-1.0, ~0.65-0.85, and <0.65 when normalized by full body height
+    if ratio >= 3.5:
         return 100, "green"
-    elif 0.65 <= ratio <= 0.84:
+    elif 2.7 <= ratio < 3.5:
         return 75, "yellow"
-    else:  # ratio < 0.65
+    else:  # ratio < 2.7
         return 25, "red"
 

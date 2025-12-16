@@ -23,7 +23,9 @@ def _compute_body_height_px(pts, frame_idx):
     """
     Compute body height in pixels at a given frame.
     
-    Uses distance from mid-shoulder to mid-ankle, or fallback to max-min of key points.
+    Uses distance from mid-shoulder to mid-ankle (torso height).
+    Note: This is shorter than full body height, so stride length ratios will be higher
+    than if normalized by full body height. Thresholds are adjusted accordingly.
     
     Args:
         pts: Dict of landmark arrays
@@ -35,7 +37,7 @@ def _compute_body_height_px(pts, frame_idx):
     if frame_idx < 0:
         return None
     
-    # Try mid-shoulder to mid-ankle
+    # Try mid-shoulder to mid-ankle (torso height)
     if ("LEFT_SHOULDER" in pts and "RIGHT_SHOULDER" in pts and
         "LEFT_ANKLE" in pts and "RIGHT_ANKLE" in pts):
         ls = pts["LEFT_SHOULDER"][frame_idx]

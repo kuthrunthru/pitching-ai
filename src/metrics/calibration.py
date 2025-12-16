@@ -13,12 +13,13 @@ without modifying measurement logic.
 
 SCORE_BANDS = {
     # Stride Length (ratio) - uses custom scoring function (score_stride_length_ratio)
-    # Thresholds: GREEN (> 0.85), YELLOW (0.65-0.84), RED (< 0.65)
+    # Thresholds adjusted for shoulder-to-ankle normalization: GREEN (>= 3.5), YELLOW (2.7-3.5), RED (< 2.7)
     # Note: This entry is for reference only; actual scoring is handled by score_stride_length_ratio()
+    # Note: Ratio is normalized by shoulder-to-ankle height (not full body height), so values are higher
     "stride_length_ratio": {
-        "bad": 0.65,   # < 0.65 is red
-        "ok": 0.85,    # 0.65-0.84 is yellow, > 0.85 is green
-        "good": 0.85,  # > 0.85 is green
+        "bad": 2.7,    # < 2.7 is red
+        "ok": 3.5,     # 2.7-3.5 is yellow, >= 3.5 is green
+        "good": 3.5,   # >= 3.5 is green
     },
     # Leg Lift Angle removed - metric deleted
 }

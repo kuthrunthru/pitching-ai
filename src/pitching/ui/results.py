@@ -395,12 +395,14 @@ def render_results():
         
         if metric_name == "Stride Length" and value is not None:
             ratio = float(value)
-            if ratio > 0.85:
+            # Note: Ratio is normalized by shoulder-to-ankle height, so thresholds are adjusted
+            # GREEN (>= 3.5), YELLOW (2.7-3.5), RED (< 2.7)
+            if ratio >= 3.5:
                 return "Excellent stride length - ideal for power and balance."
-            elif 0.65 <= ratio <= 0.84:
-                return "Stride length is moderate. Aim for above 85% of your height for optimal power transfer."
-            else:  # ratio < 0.65
-                return "Stride is too short. This limits power transfer. Work on pushing off harder and extending your stride to above 85% of your height."
+            elif 2.7 <= ratio < 3.5:
+                return "Stride length is moderate. Aim for above 3.5 for optimal power transfer."
+            else:  # ratio < 2.7
+                return "Stride is too short. This limits power transfer. Work on pushing off harder and extending your stride to above 3.5."
         
         if metric_name == "Elbow Height at Foot Strike" and value is not None:
             d = float(value)
@@ -429,25 +431,33 @@ def render_results():
                 return "Arm is slightly too straight at foot strike - aim for ~90 deg bend."
         
         if metric_name == "Ball Location at Foot Strike" and value is not None:
-            # Get the metric data to check d_px for above/below determination
-            # Since we can't access d_px directly from the suggestion function,
-            # we'll use the status which already incorporates this logic
-            # GREEN = above AND 45-90 deg, YELLOW = above AND 0-45 deg, RED = below
+            # Use status from scoring function which uses new thresholds:
+            # GREEN: 10°–25°, YELLOW: 0°–10° or 25°–40°, RED: < 0° or > 40°
             if status and status.lower() == "green":
-                return "Great - ball is above the shoulder line in an ideal 45-90 deg window at foot strike."
+                return "Good - arm is in the ideal 10-25° range at foot strike, allowing proper timing between lower and upper body."
             elif status and status.lower() == "yellow":
-                return "Acceptable - ball is on/just above the shoulder line; getting higher (45-90 deg) may help."
-            elif status and status.lower() == "red":
-                return "Poor - ball is below the shoulder line at foot strike; work on getting it up to shoulder line or above."
-            else:
-                # Fallback based on angle value alone (less precise)
                 angle = float(value)
-                if 45 <= angle <= 90:
-                    return "Great - ball is above the shoulder line in an ideal 45-90 deg window at foot strike."
-                elif 0 <= angle < 45:
-                    return "Acceptable - ball is on/just above the shoulder line; getting higher (45-90 deg) may help."
+                if 0 <= angle < 10:
+                    return "Arm is late at foot strike (0-10°) - work on getting the arm up earlier so it's in the 10-25° range when the foot lands."
+                else:  # 25 < angle <= 40
+                    return "Arm is early at foot strike (25-40°) - the arm may be too high, which can cause timing issues. Aim for the 10-25° range."
+            elif status and status.lower() == "red":
+                angle = float(value)
+                if angle < 0:
+                    return "Poor - arm is below the shoulder line at foot strike. Work on getting the arm up to at least the shoulder line (0°+) and ideally into the 10-25° range."
+                else:  # angle > 40
+                    return "Poor - arm is too high at foot strike (>40°). This can cause the arm and body to fall out of sync. Aim for the 10-25° range."
+            else:
+                # Fallback based on angle value alone
+                angle = float(value)
+                if 10 <= angle <= 25:
+                    return "Good - arm is in the ideal 10-25° range at foot strike, allowing proper timing between lower and upper body."
+                elif 0 <= angle < 10:
+                    return "Arm is late at foot strike (0-10°) - work on getting the arm up earlier so it's in the 10-25° range when the foot lands."
+                elif 25 < angle <= 40:
+                    return "Arm is early at foot strike (25-40°) - the arm may be too high, which can cause timing issues. Aim for the 10-25° range."
                 else:
-                    return "Poor - ball is below the shoulder line at foot strike; work on getting it up to shoulder line or above."
+                    return "Poor - arm position at foot strike is outside the acceptable range. Aim for the 10-25° range for optimal timing."
         
         if metric_name == "Landing Leg Bend" and value is not None:
             bend_deg = float(value)
@@ -561,7 +571,7 @@ def render_results():
             ],
         },
         "ball_angle_vs_shoulder_line_ffp_deg": {
-            "why": "Ball location at foot strike measures how far above your shoulders the ball is when your front foot lands. The primary concern here is if the arm gets up late and is not ready to go when the foot hits the ground.",
+            "why": "This metric measures where the throwing hand is at the instant the front foot lands, expressed as the angle of the arm relative to the shoulder. It shows whether the arm is still coming up, rising naturally, or already very high at foot strike. This moment matters because foot strike is when the lower body finishes moving forward and the upper body prepares to rotate. If the arm is too low or too high at this point, the arm and body can fall out of sync, forcing the arm to rush or the upper body to move too early.",
             "tips": [
                 "Try to have the ball above your shoulders between about halfway up and straight up (about 45-90 deg) at foot strike.",
                 "Avoid having the ball below your shoulders when the front foot lands.",

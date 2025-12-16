@@ -679,9 +679,10 @@ def compute_ball_angle_vs_shoulder_line_ffp(pose_cache, keyframes, min_q=0.35):
     Measures the angle (degrees) between the shoulder line and the vector from throwing shoulder to throwing wrist
     at foot strike (FFP). Interprets wrist as ball position proxy.
     
-    Ideal: 45-90 deg above the shoulder line.
-    Acceptable: 0-45 deg (on/just above shoulder line).
-    Poor: <0 deg (below shoulder line).
+    Scoring thresholds:
+    - Green: 10°–25° (inclusive) - ideal range
+    - Yellow: 0°–10° (arm late) and 25°–40° (arm early)
+    - Red: < 0° (below shoulder line) and > 40° (too high)
     
     Args:
         pose_cache: Cached pose data with "pts" dict and "pose_quality" list
@@ -848,22 +849,25 @@ def compute_ball_angle_vs_shoulder_line_ffp(pose_cache, keyframes, min_q=0.35):
         W_minus_LS = (float(W[0]) - float(LS[0]), float(W[1]) - float(LS[1]))
         d_px = W_minus_LS[0] * n_unit[0] + W_minus_LS[1] * n_unit[1]
         
-        # Classification:
-        # GREEN (ideal): d_px > 0 AND 45 <= ang <= 90
-        # YELLOW (acceptable): d_px > 0 AND 0 <= ang < 45
-        # RED (poor): d_px <= 0 (ball/wrist below shoulder line)
-        if d_px > 0:
-            if 45 <= ang <= 90:
-                status = "green"
-                score = 100
-            elif 0 <= ang < 45:
-                status = "yellow"
-                score = 75
-            else:
-                # Shouldn't happen since ang is clamped to 0..90, but handle edge case
-                status = "yellow"
-                score = 75
-        else:  # d_px <= 0
+        # Classification based on angle thresholds:
+        # GREEN: 10°–25° (inclusive)
+        # YELLOW: 0°–10° (arm late) and 25°–40° (arm early)
+        # RED: < 0° and > 40°
+        # Note: If wrist is below shoulder line (d_px <= 0), treat as negative angle for scoring
+        if d_px <= 0:
+            # Wrist below shoulder line - treat as negative angle (red)
+            status = "red"
+            score = 25
+        elif 10 <= ang <= 25:
+            # Green: ideal range
+            status = "green"
+            score = 100
+        elif (0 <= ang < 10) or (25 < ang <= 40):
+            # Yellow: arm late (0-10°) or arm early (25-40°)
+            status = "yellow"
+            score = 75
+        else:  # ang > 40 or ang < 0 (shouldn't happen for acute angle, but handle edge case)
+            # Red: too high (>40°) or invalid
             status = "red"
             score = 25
         
