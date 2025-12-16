@@ -81,7 +81,7 @@ def main():
         try:
             # Auto-detect orientation before processing
             pose_obj = mp.solutions.pose.Pose(
-                model_complexity=2,
+                model_complexity=1,
                 smooth_landmarks=True,
                 min_detection_confidence=0.4,
                 min_tracking_confidence=0.4,
@@ -107,7 +107,7 @@ def main():
                     video_path=tmp_path,
                     conf_thresh=0.4,  # Default confidence threshold
                     max_process_width=1280,  # Default max width
-                    model_complexity=2,
+                    model_complexity=1,
                     smooth_landmarks=True,
                     chosen_mode=chosen_mode,
                 )

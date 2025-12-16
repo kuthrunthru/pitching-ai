@@ -48,7 +48,7 @@ def render_orientation_review():
                     video_path=tmp_path,
                     conf_thresh=0.4,
                     max_process_width=1280,
-                    model_complexity=2,
+                    model_complexity=1,
                     smooth_landmarks=True,
                     chosen_mode=st.session_state["preview_orientation_mode"],
                 )
